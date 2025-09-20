@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Enlaces a Google Calendar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            min-height: 600px;
+        }
+
+        .section {
+            padding: 40px;
+        }
+
+        .config-section {
+            background: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+        }
+
+        .results-section {
+            background: white;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 30px;
+            background: linear-gradient(135deg, #4285f4, #34a853);
+            border-radius: 2px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4285f4;
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .session-block {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .session-block:hover {
+            border-color: #4285f4;
+            box-shadow: 0 5px 15px rgba(66, 133, 244, 0.1);
+        }
+
+        .session-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .session-title {
+            font-weight: 600;
+            color: #4285f4;
+            font-size: 1.1rem;
+        }
+
+        .remove-session {
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .remove-session:hover {
+            background: #c82333;
+            transform: scale(1.1);
+        }
+
+        .datetime-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .datetime-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .datetime-group label {
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+            color: #666;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4285f4, #34a853);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(66, 133, 244, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .add-session-btn {
+            width: 100%;
+            margin-top: 10px;
+            background: linear-gradient(135deg, #17a2b8, #20c997);
+        }
+
+        .add-session-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(23, 162, 184, 0.3);
+        }
+
+        .generate-btn {
+            width: 100%;
+            margin-top: 20px;
+            padding: 16px;
+            font-size: 1.2rem;
+        }
+
+        .results-area {
+            min-height: 200px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .results-empty {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            padding: 40px 20px;
+        }
+
+        .result-item {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #4285f4;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .result-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .result-details {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .result-link {
+            display: block;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .copy-all-btn {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .config-section {
+                border-right: none;
+                border-bottom: 1px solid #e9ecef;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .section {
+                padding: 20px;
+            }
+
+            .datetime-row {
+                grid-template-columns: 1fr;
+            }
+
+            .results-area div[style*="grid-template-columns"] {
+                grid-template-columns: 1fr !important;
+            }
+        }
+
+        .icon {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+    </style>
+<style type="text/css">
+.grande { font-size: 60px; }
+</style>
+<script>
+// Escribir aqui el código Javascript
+</script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📅 Generador de Enlaces a Google Calendar</h1>
+            <p>Crea enlaces personalizados para añadir eventos a Google Calendar de forma sencilla</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Sección de Configuración -->
+            <div class="section config-section">
+                <h2 class="section-title">⚙️ Configuración del Evento</h2>
+                
+                <form id="eventForm">
+                    <div class="form-group">
+                        <label for="eventTitle">Título del Evento *</label>
+                        <input type="text" id="eventTitle" required="" placeholder="Ej: Curso de Marketing Digital">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="eventLocation">Ubicación</label>
+                        <input type="text" id="eventLocation" placeholder="Ej: Aula 101, Centro de Formación">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="eventDescription">Descripción</label>
+                        <textarea id="eventDescription" placeholder="Describe brevemente el evento..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Sesiones del Evento *</label>
+                        <div id="sessionsContainer">
+                            <!-- Las sesiones se generarán dinámicamente -->
+                        </div>
+                        <button type="button" class="btn btn-primary add-session-btn" onclick="addSession()">
+                            ➕ Agregar Sesión
+                        </button>
+                    </div>
+
+                    <button type="button" class="btn btn-primary generate-btn" onclick="generateLinks()">
+                        🔗 Generar Enlaces
+                    </button>
+                </form>
+            </div>
+
+            <!-- Sección de Resultados -->
+            <div class="section results-section">
+                <h2 class="section-title">🎯 Enlaces Generados</h2>
+                
+                <div id="alertContainer"></div>
+                
+                <div class="results-area" id="resultsArea">
+                    <div class="results-empty">
+                        <p>Los enlaces aparecerán aquí una vez que completes el formulario y hagas clic en "Generar Enlaces"</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let sessionCount = 0;
+
+        // Inicializar con 4 sesiones por defecto
+        document.addEventListener('DOMContentLoaded', function() {
+            for (let i = 0; i < 4; i++) {
+                addSession();
+            }
+        });
+
+        function addSession() {
+            sessionCount++;
+            const container = document.getElementById('sessionsContainer');
+            
+            const sessionDiv = document.createElement('div');
+            sessionDiv.className = 'session-block';
+            sessionDiv.id = `session-${sessionCount}`;
+            
+            sessionDiv.innerHTML = `
+                <div class="session-header">
+                    <span class="session-title">Sesión ${sessionCount}</span>
+                    ${sessionCount > 1 ? `<button type="button" class="remove-session" onclick="removeSession(${sessionCount})" title="Eliminar sesión">×</button>` : ''}
+                </div>
+                <div class="datetime-row">
+                    <div class="datetime-group">
+                        <label>Fecha de Inicio</label>
+                        <input type="date" id="startDate-${sessionCount}" required>
+                    </div>
+                    <div class="datetime-group">
+                        <label>Hora de Inicio</label>
+                        <input type="time" id="startTime-${sessionCount}" required>
+                    </div>
+                </div>
+                <div class="datetime-row">
+                    <div class="datetime-group">
+                        <label>Fecha de Fin</label>
+                        <input type="date" id="endDate-${sessionCount}" required>
+                    </div>
+                    <div class="datetime-group">
+                        <label>Hora de Fin</label>
+                        <input type="time" id="endTime-${sessionCount}" required>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(sessionDiv);
+        }
+
+        function removeSession(sessionId) {
+            const sessionElement = document.getElementById(`session-${sessionId}`);
+            if (sessionElement) {
+                sessionElement.remove();
+            }
+        }
+
+        function showAlert(message, type = 'success') {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            
+            alertContainer.innerHTML = '';
+            alertContainer.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        function validateForm() {
+            const title = document.getElementById('eventTitle').value.trim();
+            if (!title) {
+                showAlert('Por favor, ingresa el título del evento.', 'error');
+                return false;
+            }
+
+            const sessions = document.querySelectorAll('.session-block');
+            let hasValidSession = false;
+
+            for (let session of sessions) {
+                const sessionId = session.id.split('-')[1];
+                const startDate = document.getElementById(`startDate-${sessionId}`).value;
+                const startTime = document.getElementById(`startTime-${sessionId}`).value;
+                const endDate = document.getElementById(`endDate-${sessionId}`).value;
+                const endTime = document.getElementById(`endTime-${sessionId}`).value;
+
+                if (startDate && startTime && endDate && endTime) {
+                    const startDateTime = new Date(`${startDate}T${startTime}`);
+                    const endDateTime = new Date(`${endDate}T${endTime}`);
+
+                    if (startDateTime >= endDateTime) {
+                        showAlert('La fecha y hora de inicio debe ser anterior a la de fin.', 'error');
+                        return false;
+                    }
+                    hasValidSession = true;
+                }
+            }
+
+            if (!hasValidSession) {
+                showAlert('Por favor, completa al menos una sesión con todas las fechas y horas.', 'error');
+                return false;
+            }
+
+            return true;
+        }
+
+        function generateLinks() {
+            if (!validateForm()) {
+                return;
+            }
+
+            const title = document.getElementById('eventTitle').value.trim();
+            const location = document.getElementById('eventLocation').value.trim();
+            const description = document.getElementById('eventDescription').value.trim();
+            
+            const resultsArea = document.getElementById('resultsArea');
+            resultsArea.innerHTML = '';
+
+            const sessions = document.querySelectorAll('.session-block');
+            const links = [];
+            let validSessionCount = 0;
+
+            sessions.forEach(session => {
+                const sessionId = session.id.split('-')[1];
+                const startDate = document.getElementById(`startDate-${sessionId}`).value;
+                const startTime = document.getElementById(`startTime-${sessionId}`).value;
+                const endDate = document.getElementById(`endDate-${sessionId}`).value;
+                const endTime = document.getElementById(`endTime-${sessionId}`).value;
+
+                if (startDate && startTime && endDate && endTime) {
+                    validSessionCount++;
+                    
+                    const startDateTime = new Date(`${startDate}T${startTime}`);
+                    const endDateTime = new Date(`${endDate}T${endTime}`);
+                    
+                    // Formatear fechas para Google Calendar (formato UTC)
+                    const formatDate = (date) => {
+                        return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+                    };
+
+                    const startFormatted = formatDate(startDateTime);
+                    const endFormatted = formatDate(endDateTime);
+
+                    // Construir URL de Google Calendar
+                    const params = new URLSearchParams({
+                        action: 'TEMPLATE',
+                        text: title,
+                        dates: `${startFormatted}/${endFormatted}`,
+                        details: description,
+                        location: location
+                    });
+
+                    const googleCalendarUrl = `https://calendar.google.com/calendar/render?${params.toString()}`;
+                    links.push(googleCalendarUrl);
+
+                    // Crear elemento de resultado
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'result-item';
+                    
+                    const formatDisplayDate = (date) => {
+                        return date.toLocaleDateString('es-ES', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+                    };
+
+                    const formatDisplayTime = (date) => {
+                        return date.toLocaleTimeString('es-ES', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                    };
+
+                    resultItem.innerHTML = `
+                        <div class="result-title">Sesión ${validSessionCount}: ${title}</div>
+                        <div class="result-details">
+                            📅 ${formatDisplayDate(startDateTime)} - ${formatDisplayDate(endDateTime)}<br>
+                            🕐 ${formatDisplayTime(startDateTime)} - ${formatDisplayTime(endDateTime)}
+                            ${location ? `<br>📍 ${location}` : ''}
+                        </div>
+                        <a href="${googleCalendarUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-success result-link">
+                            📅 Añadir este evento a mi agenda
+                        </a>
+                    `;
+                    
+                    resultsArea.appendChild(resultItem);
+                }
+            });
+
+            // Botones para copiar enlaces
+            if (links.length > 0) {
+                const buttonsContainer = document.createElement('div');
+                buttonsContainer.style.display = 'grid';
+                buttonsContainer.style.gridTemplateColumns = '1fr 1fr';
+                buttonsContainer.style.gap = '10px';
+                buttonsContainer.style.marginTop = '20px';
+
+                const copyAllBtn = document.createElement('button');
+                copyAllBtn.className = 'btn btn-secondary';
+                copyAllBtn.innerHTML = '📋 Copiar todos los enlaces';
+                copyAllBtn.onclick = () => copyAllLinks(links);
+
+                const copyEmailBtn = document.createElement('button');
+                copyEmailBtn.className = 'btn btn-primary';
+                copyEmailBtn.innerHTML = '✉️ Copiar para correo';
+                copyEmailBtn.onclick = () => copyForEmail(title, location, description, sessions);
+
+                buttonsContainer.appendChild(copyAllBtn);
+                buttonsContainer.appendChild(copyEmailBtn);
+                resultsArea.appendChild(buttonsContainer);
+
+                showAlert(`¡Perfecto! Se generaron ${links.length} enlaces exitosamente.`, 'success');
+            }
+        }
+
+        function copyAllLinks(links) {
+            const linkText = links.join('\n\n');
+            
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(linkText).then(() => {
+                    showAlert('¡Enlaces copiados al portapapeles!', 'success');
+                }).catch(() => {
+                    fallbackCopyTextToClipboard(linkText);
+                });
+            } else {
+                fallbackCopyTextToClipboard(linkText);
+            }
+        }
+
+        function copyForEmail(title, location, description, sessions) {
+            let emailContent = `📅 INVITACIÓN AL EVENTO: ${title}\n\n`;
+            
+            if (description) {
+                emailContent += `📝 DESCRIPCIÓN:\n${description}\n\n`;
+            }
+            
+            if (location) {
+                emailContent += `📍 UBICACIÓN:\n${location}\n\n`;
+            }
+            
+            emailContent += `🗓️ FECHAS Y HORARIOS:\n\n`;
+            
+            let sessionNumber = 1;
+            sessions.forEach(session => {
+                const sessionId = session.id.split('-')[1];
+                const startDate = document.getElementById(`startDate-${sessionId}`).value;
+                const startTime = document.getElementById(`startTime-${sessionId}`).value;
+                const endDate = document.getElementById(`endDate-${sessionId}`).value;
+                const endTime = document.getElementById(`endTime-${sessionId}`).value;
+
+                if (startDate && startTime && endDate && endTime) {
+                    const startDateTime = new Date(`${startDate}T${startTime}`);
+                    const endDateTime = new Date(`${endDate}T${endTime}`);
+                    
+                    const formatDate = (date) => {
+                        return date.toLocaleDateString('es-ES', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+                    };
+
+                    const formatTime = (date) => {
+                        return date.toLocaleTimeString('es-ES', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                    };
+
+                    // Construir URL de Google Calendar para esta sesión
+                    const formatDateForCalendar = (date) => {
+                        return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+                    };
+
+                    const startFormatted = formatDateForCalendar(startDateTime);
+                    const endFormatted = formatDateForCalendar(endDateTime);
+
+                    const params = new URLSearchParams({
+                        action: 'TEMPLATE',
+                        text: title,
+                        dates: `${startFormatted}/${endFormatted}`,
+                        details: description,
+                        location: location
+                    });
+
+                    const googleCalendarUrl = `https://calendar.google.com/calendar/render?${params.toString()}`;
+
+                    emailContent += `🔸 SESIÓN ${sessionNumber}:\n`;
+                    emailContent += `   📅 ${formatDate(startDateTime)}\n`;
+                    if (startDate !== endDate) {
+                        emailContent += `   📅 ${formatDate(endDateTime)}\n`;
+                    }
+                    emailContent += `   🕐 ${formatTime(startDateTime)} - ${formatTime(endDateTime)}\n`;
+                    emailContent += `   🔗 Añadir a tu calendario: ${googleCalendarUrl}\n\n`;
+                    
+                    sessionNumber++;
+                }
+            });
+            
+            emailContent += `💡 INSTRUCCIONES:\n`;
+            emailContent += `• Haz clic en los enlaces para añadir cada sesión a tu Google Calendar\n`;
+            emailContent += `• Los eventos se guardarán automáticamente con todos los detalles\n`;
+            emailContent += `• Recibirás recordatorios según tu configuración de calendario\n\n`;
+            emailContent += `¡Esperamos verte en el evento! 🎉`;
+
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(emailContent).then(() => {
+                    showAlert('¡Contenido para correo copiado al portapapeles!', 'success');
+                }).catch(() => {
+                    fallbackCopyTextToClipboard(emailContent);
+                });
+            } else {
+                fallbackCopyTextToClipboard(emailContent);
+            }
+        }
+
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                showAlert('¡Contenido copiado al portapapeles!', 'success');
+            } catch (err) {
+                showAlert('No se pudo copiar el contenido. Por favor, cópialo manualmente.', 'error');
+            }
+            
+            document.body.removeChild(textArea);
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9822751fa28f6678',t:'MTc1ODM4MzIwNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><iframe height="1" width="1" style="position: absolute; top: 0px; left: 0px; border: medium; visibility: hidden;"></iframe>
+
+
+</body></html>
